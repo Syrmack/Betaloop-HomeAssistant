@@ -85,6 +85,7 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
             readings=readings[::-1],
             doses=doses[::-1],
             meals=meals[::-1],
+            # None : serveur sans route /steps (< 1.2) ou aucune tranche aujourd'hui.
             steps_today=sum(s["count"] for s in steps) if steps else None,
             summary_24h=summary_24h,
             summary_hba1c=summary_hba1c,

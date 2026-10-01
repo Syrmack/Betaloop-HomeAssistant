@@ -15,6 +15,10 @@ class BetaloopAuthError(BetaloopError):
     """Clé API refusée par le serveur (401)."""
 
 
+class BetaloopNotFoundError(BetaloopError):
+    """Route absente (404) : serveur dans une version antérieure à son ajout."""
+
+
 class BetaloopApi:
     """Accès en lecture aux routes /api/v1/* du serveur Betaloop."""
 
@@ -33,6 +37,8 @@ class BetaloopApi:
             ) as resp:
                 if resp.status == 401:
                     raise BetaloopAuthError("Clé API manquante ou invalide")
+                if resp.status == 404:
+                    raise BetaloopNotFoundError(f"{path} : HTTP 404")
                 if resp.status >= 400:
                     raise BetaloopError(f"{path} : HTTP {resp.status}")
                 return await resp.json()
@@ -69,8 +75,12 @@ class BetaloopApi:
     async def meals(self, from_ts: int) -> list[dict]:
         return await self._get_all("/api/v1/meals", from_ts)
 
-    async def steps(self, from_ts: int) -> list[dict]:
-        return await self._get_all("/api/v1/steps", from_ts)
+    async def steps(self, from_ts: int) -> list[dict] | None:
+        """None si le serveur est antérieur à la 1.2 (pas de route /api/v1/steps)."""
+        try:
+            return await self._get_all("/api/v1/steps", from_ts)
+        except BetaloopNotFoundError:
+            return None
 
     async def summary(self, days: int) -> dict:
         return await self._get("/api/v1/summary", {"days": days})

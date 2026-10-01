@@ -86,20 +86,21 @@ def _doses_attrs(data: BetaloopData) -> dict[str, Any]:
 
 
 def _meals_attrs(data: BetaloopData) -> dict[str, Any]:
+    # .get() : les serveurs antérieurs à la 1.1 n'ont ni glucides ni nature/nom de repas.
     last = data.meals[-1] if data.meals else None
     return {
         "last_meal_time": _ts(last["timestamp"]).isoformat() if last else None,
-        "last_meal_kind": last["kind"] if last else None,
-        "last_meal_carbs": last["carbs_grams"] if last else None,
+        "last_meal_kind": last.get("kind") if last else None,
+        "last_meal_carbs": last.get("carbs_grams") if last else None,
         "meals": [
-            {"t": m["timestamp"], "carbs": m["carbs_grams"], "kind": m["kind"], "name": m["name"]}
+            {"t": m["timestamp"], "carbs": m.get("carbs_grams"), "kind": m.get("kind"), "name": m.get("name")}
             for m in data.meals
         ],
     }
 
 
 def _total_carbs(data: BetaloopData) -> float:
-    return round(sum(m["carbs_grams"] or 0 for m in data.meals), 1)
+    return round(sum(m.get("carbs_grams") or 0 for m in data.meals), 1)
 
 
 @dataclass(frozen=True, kw_only=True)
