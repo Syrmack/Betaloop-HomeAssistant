@@ -1,0 +1,120 @@
+# Carte de tableau de bord Betaloop.
+# Prérequis : la carte "apexcharts-card" (HACS > Interface > apexcharts-card).
+# Utilisation : Tableau de bord > Modifier > Ajouter une carte > Manuel, puis coller ce YAML.
+#
+# Le graphique lit directement les séries exposées en attributs par l'intégration
+# (readings / doses / meals) : il affiche donc tout l'historique de la fenêtre configurée
+# dès l'installation, sans attendre que le recorder de Home Assistant se remplisse.
+type: vertical-stack
+cards:
+  - type: custom:apexcharts-card
+    graph_span: 24h
+    experimental:
+      color_threshold: true
+    header:
+      show: true
+      title: Glycémie
+      show_states: true
+      colorize_states: true
+    now:
+      show: true
+    all_series_config:
+      show:
+        legend_value: false
+    yaxis:
+      - id: glucose
+        min: 40
+        max: ~300
+        decimals: 0
+        apex_config:
+          tickAmount: 6
+      - id: bolus
+        opposite: true
+        min: 0
+        max: ~20
+        decimals: 0
+        show: false
+      - id: carbs
+        opposite: true
+        min: 0
+        max: ~150
+        decimals: 0
+        show: false
+    apex_config:
+      chart:
+        height: 320
+      annotations:
+        yaxis:
+          # Plage cible 70–180 mg/dL (mêmes seuils que le serveur et l'app).
+          - y: 70
+            y2: 180
+            fillColor: "#4caf50"
+            opacity: 0.08
+            borderColor: transparent
+          - y: 70
+            borderColor: "#e53935"
+            strokeDashArray: 4
+          - y: 180
+            borderColor: "#fb8c00"
+            strokeDashArray: 4
+    series:
+      - entity: sensor.betaloop_glucose
+        name: Glycémie
+        yaxis_id: glucose
+        type: line
+        stroke_width: 2.5
+        extend_to: false
+        color_threshold:
+          - value: 0
+            color: "#e53935"
+          - value: 70
+            color: "#43a047"
+          - value: 180
+            color: "#fb8c00"
+          - value: 250
+            color: "#e53935"
+        data_generator: |
+          return entity.attributes.readings || [];
+      - entity: sensor.betaloop_insulin
+        name: Insuline
+        yaxis_id: bolus
+        type: column
+        color: "#1e88e5"
+        unit: U
+        show:
+          in_header: false
+        data_generator: |
+          return (entity.attributes.doses || []).map(d => [d.t, d.units]);
+      - entity: sensor.betaloop_carbs
+        name: Glucides
+        yaxis_id: carbs
+        type: column
+        color: "#8e24aa"
+        unit: g
+        show:
+          in_header: false
+        data_generator: |
+          return (entity.attributes.meals || [])
+            .filter(m => m.carbs !== null)
+            .map(m => [m.t, m.carbs]);
+
+  - type: glance
+    columns: 4
+    entities:
+      - entity: sensor.betaloop_trend
+        name: Tendance
+      - entity: sensor.betaloop_time_in_range_24h
+        name: Dans la cible
+      - entity: sensor.betaloop_average_24h
+        name: Moyenne 24 h
+      - entity: sensor.betaloop_estimated_hba1c
+        name: HbA1c est.
+      - entity: sensor.betaloop_insulin
+        name: Insuline 24 h
+      - entity: sensor.betaloop_carbs
+        name: Glucides 24 h
+      - entity: sensor.betaloop_steps_today
+        name: Pas
+      - entity: sensor.betaloop_last_reading
+        name: Relevé
+        format: relative

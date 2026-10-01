@@ -1,0 +1,71 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Serveur Betaloop",
+        "description": "Même URL et même clé API que dans l'app Betaloop (Réglages > Serveur d'analyse).",
+        "data": {
+          "url": "URL du serveur",
+          "api_key": "Clé API"
+        },
+        "data_description": {
+          "url": "Par exemple http://192.168.1.10:8000",
+          "api_key": "Valeur de BETALOOP_API_KEY dans le fichier .env du serveur"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Nouvelle clé API",
+        "description": "Le serveur Betaloop a refusé la clé API. Saisis la valeur actuelle de BETALOOP_API_KEY.",
+        "data": {
+          "api_key": "Clé API"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Serveur injoignable. Vérifie l'URL et que le serveur tourne.",
+      "invalid_auth": "Le serveur a refusé la clé API."
+    },
+    "abort": {
+      "already_configured": "Ce serveur est déjà configuré.",
+      "reauth_successful": "Clé API mise à jour."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Intervalle d'interrogation",
+          "history_hours": "Fenêtre d'historique du graphique"
+        },
+        "data_description": {
+          "scan_interval": "L'app synchronise environ toutes les 15 minutes : interroger plus souvent que toutes les quelques minutes n'apporte rien.",
+          "history_hours": "Nombre d'heures de relevés, doses et repas exposées en attributs pour le graphique."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "glucose": { "name": "Glycémie" },
+      "trend": {
+        "name": "Tendance glycémie",
+        "state": {
+          "falling_fast": "Baisse rapide",
+          "falling": "Baisse",
+          "stable": "Stable",
+          "rising": "Hausse",
+          "rising_fast": "Hausse rapide"
+        }
+      },
+      "last_reading": { "name": "Dernier relevé" },
+      "average_24h": { "name": "Glycémie moyenne (24 h)" },
+      "time_in_range_24h": { "name": "Temps dans la cible (24 h)" },
+      "time_below_range_24h": { "name": "Temps sous la cible (24 h)" },
+      "time_above_range_24h": { "name": "Temps au-dessus de la cible (24 h)" },
+      "estimated_hba1c": { "name": "HbA1c estimée" },
+      "insulin": { "name": "Insuline (fenêtre)" },
+      "carbs": { "name": "Glucides (fenêtre)" },
+      "steps_today": { "name": "Pas aujourd'hui" }
+    }
+  }
+}

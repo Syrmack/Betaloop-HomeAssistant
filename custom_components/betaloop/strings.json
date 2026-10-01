@@ -1,0 +1,71 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Betaloop server",
+        "description": "Same URL and API key as in the Betaloop app (Settings > Analysis server).",
+        "data": {
+          "url": "Server URL",
+          "api_key": "API key"
+        },
+        "data_description": {
+          "url": "For example http://192.168.1.10:8000",
+          "api_key": "Value of BETALOOP_API_KEY in the server's .env file"
+        }
+      },
+      "reauth_confirm": {
+        "title": "New API key",
+        "description": "The Betaloop server rejected the API key. Enter the current value of BETALOOP_API_KEY.",
+        "data": {
+          "api_key": "API key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the server. Check the URL and that the server is running.",
+      "invalid_auth": "The server rejected the API key."
+    },
+    "abort": {
+      "already_configured": "This server is already configured.",
+      "reauth_successful": "API key updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Polling interval",
+          "history_hours": "Chart history window"
+        },
+        "data_description": {
+          "scan_interval": "The app syncs about every 15 minutes: polling more often than every few minutes brings nothing new.",
+          "history_hours": "Hours of readings, doses and meals exposed as attributes for the chart."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "glucose": { "name": "Glucose" },
+      "trend": {
+        "name": "Glucose trend",
+        "state": {
+          "falling_fast": "Falling fast",
+          "falling": "Falling",
+          "stable": "Stable",
+          "rising": "Rising",
+          "rising_fast": "Rising fast"
+        }
+      },
+      "last_reading": { "name": "Last reading" },
+      "average_24h": { "name": "Average glucose (24 h)" },
+      "time_in_range_24h": { "name": "Time in range (24 h)" },
+      "time_below_range_24h": { "name": "Time below range (24 h)" },
+      "time_above_range_24h": { "name": "Time above range (24 h)" },
+      "estimated_hba1c": { "name": "Estimated HbA1c" },
+      "insulin": { "name": "Insulin (window)" },
+      "carbs": { "name": "Carbs (window)" },
+      "steps_today": { "name": "Steps today" }
+    }
+  }
+}
