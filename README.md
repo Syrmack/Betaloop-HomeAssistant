@@ -95,6 +95,13 @@ entities:
   - sensor.betaloop_glucose
 ```
 
+## Icône
+
+`custom_components/betaloop/brand/` contient l'icône de l'intégration (`icon.png` 256 px,
+`icon@2x.png` 512 px) : la goutte de l'app Android sur son violet `#6750A4`. Home Assistant
+l'affiche dans *Appareils et services* pour les intégrations personnalisées qui fournissent
+ce dossier ; sur une version qui ne le gère pas, l'icône générique reste affichée.
+
 ## Réseau
 
 Home Assistant doit pouvoir joindre le serveur. Si le serveur n'est accessible que via
