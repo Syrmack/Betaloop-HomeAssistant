@@ -43,6 +43,11 @@ cards:
     apex_config:
       chart:
         height: 320
+      # Affiché quand aucune série n'a de point, en général parce que les capteurs sont
+      # indisponibles (serveur injoignable). Par défaut ApexCharts affiche "Loading...", ce qui
+      # laisse croire à un chargement en cours.
+      noData:
+        text: Aucune donnée — capteurs Betaloop indisponibles ?
       annotations:
         yaxis:
           # Plage cible 70–180 mg/dL (mêmes seuils que le serveur et l'app).
