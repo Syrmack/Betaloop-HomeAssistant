@@ -9,18 +9,29 @@ avec la même clé API que l'app, et n'écrit jamais rien.
 
 ## Installation
 
-### Via HACS (recommandé)
-
-1. HACS > menu ⋮ > **Dépôts personnalisés**
-2. URL : `https://gitea.midgar.me/syrma/Betaloop-HomeAssistant`, catégorie **Intégration**
-3. Installe **Betaloop**, puis redémarre Home Assistant.
-
-> HACS doit pouvoir lire le dépôt : il doit être public sur Gitea (ou installe à la main).
-
 ### À la main
 
 Copie le dossier `custom_components/betaloop` dans le dossier `config/custom_components/`
-de Home Assistant, puis redémarre.
+de Home Assistant (via l'add-on *Samba share*, *File editor* ou *Terminal & SSH*), puis
+redémarre. Pour une mise à jour, remplace le dossier et redémarre.
+
+Depuis l'add-on *Terminal & SSH*, en une commande :
+
+```bash
+cd /tmp && rm -rf betaloop-ha \
+  && git clone --depth 1 https://gitea.midgar.me/syrma/Betaloop-HomeAssistant.git betaloop-ha \
+  && rm -rf /config/custom_components/betaloop \
+  && mkdir -p /config/custom_components \
+  && cp -r betaloop-ha/custom_components/betaloop /config/custom_components/ \
+  && ha core restart
+```
+
+### Via HACS
+
+HACS ne sait lire que des dépôts **GitHub** : l'URL Gitea est ignorée sans message
+d'erreur. Pour passer par HACS, il faut un miroir GitHub du dépôt (Gitea > Paramètres du
+dépôt > Miroir > *Pousser vers un miroir*, vers un dépôt GitHub public), puis ajouter
+l'URL **GitHub** dans HACS > ⋮ > **Dépôts personnalisés**, catégorie **Intégration**.
 
 ## Configuration
 
