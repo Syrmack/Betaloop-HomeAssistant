@@ -119,6 +119,14 @@ class BetaloopApi:
         except BetaloopNotFoundError:
             return None
 
+    async def settings(self) -> dict | None:
+        """Seuils réglés dans l'app (low_mgdl, high_mgdl) ; None si le serveur est antérieur à la
+        1.7 (pas de route /api/v1/settings)."""
+        try:
+            return await self._get("/api/v1/settings")
+        except BetaloopNotFoundError:
+            return None
+
     async def server_version(self) -> str | None:
         """Version déployée du serveur ; None s'il est antérieur à la 1.4 (/health sans version)."""
         return (await self._get("/health")).get("version")

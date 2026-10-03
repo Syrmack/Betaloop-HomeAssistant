@@ -54,19 +54,23 @@ la nouvelle.
 
 | Entité | Description |
 |---|---|
-| `sensor.betaloop_glucose` | Dernière glycémie (mg/dL). *Inconnue* si le dernier relevé a plus de 45 min. Attribut `readings` : la série pour le graphique. |
+| `sensor.betaloop_glucose` | Dernière glycémie (mg/dL). *Inconnue* si le dernier relevé a plus de 45 min. Attribut `readings` : la série pour le graphique ; `target_low` / `target_high` : les seuils de l'app. |
 | `sensor.betaloop_trend` | Tendance : baisse rapide / baisse / stable / hausse / hausse rapide |
 | `sensor.betaloop_last_reading` | Horodatage du dernier relevé reçu par le serveur |
 | `sensor.betaloop_average_24h` | Glycémie moyenne sur 24 h |
-| `sensor.betaloop_time_in_range_24h` | % de temps dans la cible 70–180 mg/dL sur 24 h |
-| `sensor.betaloop_time_below_range_24h` | % sous 70 mg/dL sur 24 h |
-| `sensor.betaloop_time_above_range_24h` | % au-dessus de 180 mg/dL sur 24 h |
+| `sensor.betaloop_time_in_range_24h` | % de temps dans la cible sur 24 h, entre les seuils réglés dans l'app (70–180 mg/dL par défaut) |
+| `sensor.betaloop_time_below_range_24h` | % sous le seuil bas sur 24 h |
+| `sensor.betaloop_time_above_range_24h` | % au-dessus du seuil haut sur 24 h |
 | `sensor.betaloop_estimated_hba1c` | HbA1c estimée sur 14 jours (formule ADAG, comme le serveur) |
 | `sensor.betaloop_insulin` | Total d'insuline sur la fenêtre d'historique ; attributs : dernière dose, liste `doses` |
 | `sensor.betaloop_carbs` | Total de glucides sur la fenêtre d'historique ; attributs : dernier repas, liste `meals` |
 | `sensor.betaloop_steps_today` | Pas depuis minuit |
 | `sensor.betaloop_sensor_expiry` | Date d'expiration du capteur CGM (activation + durée de vie réglée dans l'app) ; attributs : numéro de série, activation, durée de vie. Nécessite le serveur 1.5. |
 | `sensor.betaloop_sensor_days_left` | Jours restants avant expiration du capteur (0 une fois expiré) |
+
+Les seuils de la plage cible sont ceux réglés dans l'app, que le serveur reçoit à partir de
+la 1.7 (attributs `target_low` / `target_high` de la glycémie et des capteurs de temps dans
+la cible). Avec un serveur plus ancien, ce sont ceux par défaut, 70 et 180 mg/dL.
 
 Comme `sensor.betaloop_glucose` utilise la classe *concentration de glucose sanguin*, tu
 peux l'afficher en mmol/L depuis les paramètres de l'entité. Les séries en attributs
@@ -76,7 +80,8 @@ enregistrées dans la base du recorder (elles sont rechargées à chaque interro
 ## Graphique dans le tableau de bord
 
 La carte [`dashboard/betaloop-card.yaml`](dashboard/betaloop-card.yaml) affiche la
-glycémie des dernières 24 h colorée selon la plage cible (rouge < 70, vert, orange > 180),
+glycémie des dernières 24 h colorée selon la plage cible (rouge < 70, vert, orange > 180 :
+les seuils par défaut, à changer dans le fichier si tu les as modifiés dans l'app),
 avec la bande cible en fond, les doses d'insuline et les glucides en barres, et une ligne
 de tuiles (tendance, temps dans la cible, moyenne, HbA1c, insuline, glucides, pas, expiration
 du capteur).
@@ -115,11 +120,7 @@ les deux sont sur le même réseau.
 
 ### Prioritaires
 
-1. **Seuils de l'app.** La plage cible est fixée à 70–180 mg/dL (`const.py`, attributs des
-   capteurs, carte du tableau de bord), alors que les seuils se règlent dans l'app.
-   L'intégration lira ceux que l'app envoie au serveur (`/api/v1/settings`, à venir côté
-   serveur), avec 70 / 180 en repli pour un serveur plus ancien.
-2. **Moins de charge.** Chaque interrogation (toutes les 5 min) envoie 9 requêtes au
+1. **Moins de charge.** Chaque interrogation (toutes les 5 min) envoie 9 requêtes au
    serveur, dont un `summary` sur 14 jours pour l'HbA1c, qui ne bouge presque pas d'un
    cycle à l'autre. Il suffit de rafraîchir l'HbA1c, la version du serveur et le capteur
    environ toutes les heures ; l'intégration utilisera aussi la route agrégée du serveur
