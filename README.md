@@ -110,3 +110,27 @@ ce dossier ; sur une version qui ne le gère pas, l'icône générique reste aff
 Home Assistant doit pouvoir joindre le serveur. Si le serveur n'est accessible que via
 Tailscale, installe l'add-on Tailscale sur Home Assistant, ou utilise l'adresse locale si
 les deux sont sur le même réseau.
+
+## Prochaines améliorations
+
+### Prioritaires
+
+1. **Seuils de l'app.** La plage cible est fixée à 70–180 mg/dL (`const.py`, attributs des
+   capteurs, carte du tableau de bord), alors que les seuils se règlent dans l'app.
+   L'intégration lira ceux que l'app envoie au serveur (`/api/v1/settings`, à venir côté
+   serveur), avec 70 / 180 en repli pour un serveur plus ancien.
+2. **Moins de charge.** Chaque interrogation (toutes les 5 min) envoie 9 requêtes au
+   serveur, dont un `summary` sur 14 jours pour l'HbA1c, qui ne bouge presque pas d'un
+   cycle à l'autre. Il suffit de rafraîchir l'HbA1c, la version du serveur et le capteur
+   environ toutes les heures ; l'intégration utilisera aussi la route agrégée du serveur
+   si elle est ajoutée.
+
+### Probables
+
+- **Binary sensors** pour les automatisations : hypo, hyper, données périmées, capteur
+  qui expire dans moins de 24 h. Et des événements (`betaloop_hypo`...) pour, par
+  exemple, faire clignoter une lampe la nuit : un second canal d'alerte, indépendant du
+  téléphone.
+- **Capteur de variation** (delta en mg/dL depuis le relevé précédent).
+- **Diagnostics** (`diagnostics.py`, clé API masquée) pour le dépannage.
+- **Tests** avec `pytest-homeassistant-custom-component`.
