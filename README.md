@@ -81,13 +81,19 @@ enregistrées dans la base du recorder (elles sont rechargées à chaque interro
 ## Graphique dans le tableau de bord
 
 La carte [`dashboard/betaloop-card.yaml`](dashboard/betaloop-card.yaml) affiche la
-glycémie des dernières 24 h colorée selon la plage cible (rouge < 70, vert, orange > 180 :
-les seuils par défaut, à changer dans le fichier si tu les as modifiés dans l'app),
-avec la bande cible en fond, les doses d'insuline et les glucides en barres, et une ligne
-de tuiles (tendance, variation, temps dans la cible, moyenne, HbA1c, insuline, glucides, pas, expiration
-du capteur).
+glycémie des dernières 24 h colorée selon la plage cible (rouge sous le seuil bas, vert,
+orange au-dessus du seuil haut, rouge au-delà de 250 mg/dL), avec la bande cible en fond, les
+doses d'insuline et les glucides en barres, et une ligne de tuiles (tendance, variation, temps
+dans la cible, moyenne, HbA1c, insuline, glucides, pas, expiration du capteur).
 
-1. Installe la carte **apexcharts-card** via HACS (catégorie *Interface*).
+Les seuils du graphique (couleurs, bande et lignes pointillées) sont ceux réglés dans l'app,
+lus dans les attributs `target_low` / `target_high` de `sensor.betaloop_glucose` : un
+changement dans l'app arrive sur le graphique à la synchro suivante, puis dans l'heure côté
+Home Assistant. Avec un serveur antérieur à la 1.7, ce sont ceux par défaut, 70 et 180 mg/dL.
+
+1. Installe les cartes **apexcharts-card** et **config-template-card** via HACS (catégorie
+   *Interface*). config-template-card sert à passer les seuils au graphique : apexcharts-card
+   seule n'accepte que des valeurs fixes.
 2. Tableau de bord > **Modifier** > **Ajouter une carte** > **Manuel**, colle le contenu du
    fichier.
 
