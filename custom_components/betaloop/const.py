@@ -16,6 +16,10 @@ MAX_HISTORY_HOURS = 72
 # Période de calcul de l'HbA1c estimée : une seule journée n'a pas de sens pour cet indicateur.
 HBA1C_PERIOD_DAYS = 14
 
+# Rafraîchissement de ce qui bouge peu (HbA1c sur 14 jours, version du serveur, capteur actif) :
+# inutile de le relire à chaque interrogation.
+SLOW_REFRESH_INTERVAL = timedelta(hours=1)
+
 # Seuils de la plage cible, identiques à ceux du serveur (compute_summary).
 TARGET_LOW_MGDL = 70
 TARGET_HIGH_MGDL = 180

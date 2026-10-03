@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -22,6 +22,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL_MIN,
     DOMAIN,
     HBA1C_PERIOD_DAYS,
+    SLOW_REFRESH_INTERVAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -45,6 +46,19 @@ class BetaloopData:
     sensor: dict | None = None
 
 
+@dataclass
+class _SlowData:
+    """Données relues seulement toutes les SLOW_REFRESH_INTERVAL (voir BetaloopCoordinator)."""
+
+    summary_hba1c: dict
+    server_version: str | None
+    sensor: dict | None
+
+
+async def _cached(value: _SlowData) -> _SlowData:
+    return value
+
+
 class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
     """Récupère en un cycle tout ce dont les capteurs et le graphique ont besoin."""
 
@@ -63,32 +77,41 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
         self.api = api
         self.history_hours: int = entry.options.get(CONF_HISTORY_HOURS, DEFAULT_HISTORY_HOURS)
         self._server_version: str | None = None
+        # Données qui ne bougent presque pas d'un cycle à l'autre (HbA1c sur 14 jours, version du
+        # serveur, capteur actif) : relues seulement toutes les SLOW_REFRESH_INTERVAL.
+        self._slow: _SlowData | None = None
+        self._slow_fetched_at: datetime | None = None
 
     async def _async_update_data(self) -> BetaloopData:
         now = dt_util.now()
         from_ts = int((now - timedelta(hours=self.history_hours)).timestamp() * 1000)
         today_ts = int(dt_util.start_of_local_day(now).timestamp() * 1000)
+        refresh_slow = (
+            self._slow is None
+            or self._slow_fetched_at is None
+            or now - self._slow_fetched_at >= SLOW_REFRESH_INTERVAL
+        )
 
         try:
-            (
-                latest, readings, doses, meals, steps, summary_24h, summary_hba1c, server_version, sensor
-            ) = await asyncio.gather(
-                self.api.latest_glucose(),
+            readings, doses, meals, steps, summary_24h, slow = await asyncio.gather(
                 self.api.glucose(from_ts),
                 self.api.doses(from_ts),
                 self.api.meals(from_ts),
                 self.api.steps(today_ts),
                 self.api.summary(1),
-                self.api.summary(HBA1C_PERIOD_DAYS),
-                self.api.server_version(),
-                self.api.current_sensor(),
+                self._fetch_slow() if refresh_slow else _cached(self._slow),
             )
+            # Le relevé le plus récent est en tête de la série (ordre décroissant) ; une requête à
+            # part n'est utile que si la fenêtre d'historique n'en contient aucun.
+            latest = readings[0] if readings else await self.api.latest_glucose()
         except BetaloopAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except BetaloopError as err:
             raise UpdateFailed(str(err)) from err
 
-        self._update_device_sw_version(server_version)
+        if refresh_slow:
+            self._slow, self._slow_fetched_at = slow, now
+        self._update_device_sw_version(slow.server_version)
 
         # L'API renvoie du plus récent au plus ancien ; un graphique veut l'ordre chronologique.
         return BetaloopData(
@@ -99,10 +122,18 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
             # None : serveur sans route /steps (< 1.2) ou aucune tranche aujourd'hui.
             steps_today=sum(s["count"] for s in steps) if steps else None,
             summary_24h=summary_24h,
-            summary_hba1c=summary_hba1c,
-            server_version=server_version,
-            sensor=sensor,
+            summary_hba1c=slow.summary_hba1c,
+            server_version=slow.server_version,
+            sensor=slow.sensor,
         )
+
+    async def _fetch_slow(self) -> _SlowData:
+        summary_hba1c, server_version, sensor = await asyncio.gather(
+            self.api.summary(HBA1C_PERIOD_DAYS),
+            self.api.server_version(),
+            self.api.current_sensor(),
+        )
+        return _SlowData(summary_hba1c=summary_hba1c, server_version=server_version, sensor=sensor)
 
     def _update_device_sw_version(self, version: str | None) -> None:
         """Reporte une nouvelle version du serveur (mise à jour déployée) sur l'appareil : la
