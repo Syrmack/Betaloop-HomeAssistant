@@ -65,11 +65,13 @@ def _trend(data: BetaloopData) -> str | None:
 
 def _glucose_attrs(data: BetaloopData) -> dict[str, Any]:
     latest = data.latest
+    # Seuils réglés dans l'app (serveur 1.7), sinon ceux par défaut.
+    settings = data.settings or {}
     return {
         "trend": _trend(data),
         "reading_time": _ts(latest["timestamp"]).isoformat() if latest else None,
-        "target_low": TARGET_LOW_MGDL,
-        "target_high": TARGET_HIGH_MGDL,
+        "target_low": settings.get("low_mgdl", TARGET_LOW_MGDL),
+        "target_high": settings.get("high_mgdl", TARGET_HIGH_MGDL),
         # [[epoch ms, mg/dL], ...] du plus ancien au plus récent, pour apexcharts-card.
         "readings": [[r["timestamp"], r["value_mgdl"]] for r in data.readings],
     }
@@ -123,6 +125,15 @@ def _sensor_attrs(data: BetaloopData) -> dict[str, Any]:
     }
 
 
+def _range_attrs(data: BetaloopData) -> dict[str, Any]:
+    """Seuils avec lesquels le serveur a calculé le temps dans la cible (ceux de l'app depuis la 1.7)."""
+    summary = data.summary_24h
+    return {
+        "target_low": summary.get("target_low_mgdl", TARGET_LOW_MGDL),
+        "target_high": summary.get("target_high_mgdl", TARGET_HIGH_MGDL),
+    }
+
+
 def _total_carbs(data: BetaloopData) -> float:
     return round(sum(m.get("carbs_grams") or 0 for m in data.meals), 1)
 
@@ -173,6 +184,7 @@ SENSORS: tuple[BetaloopSensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:bullseye-arrow",
         value_fn=lambda d: d.summary_24h.get("time_in_range_pct"),
+        attrs_fn=_range_attrs,
     ),
     BetaloopSensorDescription(
         key="time_below_range_24h",
@@ -181,6 +193,7 @@ SENSORS: tuple[BetaloopSensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:arrow-collapse-down",
         value_fn=lambda d: d.summary_24h.get("time_below_range_pct"),
+        attrs_fn=_range_attrs,
     ),
     BetaloopSensorDescription(
         key="time_above_range_24h",
@@ -189,6 +202,7 @@ SENSORS: tuple[BetaloopSensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:arrow-collapse-up",
         value_fn=lambda d: d.summary_24h.get("time_above_range_pct"),
+        attrs_fn=_range_attrs,
     ),
     BetaloopSensorDescription(
         key="estimated_hba1c",

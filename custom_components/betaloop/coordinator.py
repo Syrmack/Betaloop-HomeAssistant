@@ -43,6 +43,8 @@ class BetaloopData:
     server_version: str | None = None
     # Capteur actif (serial_number, activated_at, expires_at... en epoch ms) ; None si inconnu.
     sensor: dict | None = None
+    # Seuils de l'app (low_mgdl, high_mgdl) ; None si le serveur est antérieur à la 1.7.
+    settings: dict | None = None
 
 
 class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
@@ -71,7 +73,8 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
 
         try:
             (
-                latest, readings, doses, meals, steps, summary_24h, summary_hba1c, server_version, sensor
+                latest, readings, doses, meals, steps, summary_24h, summary_hba1c, server_version, sensor,
+                settings,
             ) = await asyncio.gather(
                 self.api.latest_glucose(),
                 self.api.glucose(from_ts),
@@ -82,6 +85,7 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
                 self.api.summary(HBA1C_PERIOD_DAYS),
                 self.api.server_version(),
                 self.api.current_sensor(),
+                self.api.settings(),
             )
         except BetaloopAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
@@ -102,6 +106,7 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
             summary_hba1c=summary_hba1c,
             server_version=server_version,
             sensor=sensor,
+            settings=settings,
         )
 
     def _update_device_sw_version(self, version: str | None) -> None:

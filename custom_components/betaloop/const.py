@@ -16,7 +16,7 @@ MAX_HISTORY_HOURS = 72
 # Période de calcul de l'HbA1c estimée : une seule journée n'a pas de sens pour cet indicateur.
 HBA1C_PERIOD_DAYS = 14
 
-# Seuils de la plage cible, identiques à ceux du serveur (compute_summary).
+# Seuils de la plage cible par défaut, quand le serveur ne donne pas ceux de l'app (avant la 1.7).
 TARGET_LOW_MGDL = 70
 TARGET_HIGH_MGDL = 180
 

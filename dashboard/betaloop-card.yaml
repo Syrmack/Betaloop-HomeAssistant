@@ -50,7 +50,9 @@ cards:
         text: Aucune donnée — capteurs Betaloop indisponibles ?
       annotations:
         yaxis:
-          # Plage cible 70–180 mg/dL (mêmes seuils que le serveur et l'app).
+          # Plage cible 70–180 mg/dL, les seuils par défaut de l'app. La carte ne peut pas les lire :
+          # si tu les as changés dans l'app, reporte ici et dans color_threshold les attributs
+          # target_low / target_high de sensor.betaloop_glucose.
           - y: 70
             y2: 180
             fillColor: "#4caf50"
