@@ -1,4 +1,5 @@
-"""Capteurs Betaloop : glycémie courante, tendance, statistiques, insuline, glucides, pas."""
+"""Capteurs Betaloop : glycémie courante, tendance, statistiques, insuline, glucides, pas,
+expiration du capteur CGM."""
 
 from __future__ import annotations
 
@@ -19,6 +20,7 @@ from homeassistant.const import (
     EntityCategory,
     UnitOfBloodGlucoseConcentration,
     UnitOfMass,
+    UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
@@ -97,6 +99,27 @@ def _meals_attrs(data: BetaloopData) -> dict[str, Any]:
             {"t": m["timestamp"], "carbs": m.get("carbs_grams"), "kind": m.get("kind"), "name": m.get("name")}
             for m in data.meals
         ],
+    }
+
+
+def _sensor_expiry(data: BetaloopData) -> datetime | None:
+    return _ts(data.sensor["expires_at"]) if data.sensor else None
+
+
+def _sensor_days_left(data: BetaloopData) -> float | None:
+    """Jours restants avant expiration, 0 une fois le capteur expiré."""
+    expiry = _sensor_expiry(data)
+    if expiry is None:
+        return None
+    return round(max(0.0, (expiry - dt_util.utcnow()).total_seconds() / 86400), 2)
+
+
+def _sensor_attrs(data: BetaloopData) -> dict[str, Any]:
+    sensor = data.sensor or {}
+    return {
+        "serial_number": sensor.get("serial_number"),
+        "activated_at": _ts(sensor["activated_at"]).isoformat() if sensor else None,
+        "lifetime_days": sensor.get("lifetime_days"),
     }
 
 
@@ -202,6 +225,25 @@ SENSORS: tuple[BetaloopSensorDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         icon="mdi:shoe-print",
         value_fn=lambda d: d.steps_today,
+    ),
+    BetaloopSensorDescription(
+        key="sensor_expiry",
+        translation_key="sensor_expiry",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        icon="mdi:calendar-clock",
+        # None (inconnu) : aucun capteur reçu de l'app, ou serveur antérieur à la 1.5.
+        value_fn=_sensor_expiry,
+        attrs_fn=_sensor_attrs,
+    ),
+    BetaloopSensorDescription(
+        key="sensor_days_left",
+        translation_key="sensor_days_left",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=1,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:timer-sand",
+        value_fn=_sensor_days_left,
     ),
     BetaloopSensorDescription(
         key="server_version",

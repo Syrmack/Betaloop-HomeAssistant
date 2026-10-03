@@ -123,3 +123,6 @@ cards:
       - entity: sensor.betaloop_last_reading
         name: Relevé
         format: relative
+      - entity: sensor.betaloop_sensor_expiry
+        name: Capteur
+        format: relative

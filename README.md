@@ -1,7 +1,7 @@
 # Betaloop pour Home Assistant
 
 Intégration Home Assistant qui lit les données du [serveur Betaloop](https://gitea.midgar.me/syrma/Betaloop-server)
-(glycémie, tendance, statistiques, insuline, glucides, pas) et les expose sous forme de
+(glycémie, tendance, statistiques, insuline, glucides, pas, expiration du capteur) et les expose sous forme de
 capteurs, avec une carte de tableau de bord prête à l'emploi pour le graphique.
 
 L'intégration ne fait que **lire** : elle interroge les routes `GET /api/v1/*` du serveur
@@ -65,6 +65,8 @@ la nouvelle.
 | `sensor.betaloop_insulin` | Total d'insuline sur la fenêtre d'historique ; attributs : dernière dose, liste `doses` |
 | `sensor.betaloop_carbs` | Total de glucides sur la fenêtre d'historique ; attributs : dernier repas, liste `meals` |
 | `sensor.betaloop_steps_today` | Pas depuis minuit |
+| `sensor.betaloop_sensor_expiry` | Date d'expiration du capteur CGM (activation + durée de vie réglée dans l'app) ; attributs : numéro de série, activation, durée de vie. Nécessite le serveur 1.5. |
+| `sensor.betaloop_sensor_days_left` | Jours restants avant expiration du capteur (0 une fois expiré) |
 
 Comme `sensor.betaloop_glucose` utilise la classe *concentration de glucose sanguin*, tu
 peux l'afficher en mmol/L depuis les paramètres de l'entité. Les séries en attributs
@@ -76,7 +78,8 @@ enregistrées dans la base du recorder (elles sont rechargées à chaque interro
 La carte [`dashboard/betaloop-card.yaml`](dashboard/betaloop-card.yaml) affiche la
 glycémie des dernières 24 h colorée selon la plage cible (rouge < 70, vert, orange > 180),
 avec la bande cible en fond, les doses d'insuline et les glucides en barres, et une ligne
-de tuiles (tendance, temps dans la cible, moyenne, HbA1c, insuline, glucides, pas).
+de tuiles (tendance, temps dans la cible, moyenne, HbA1c, insuline, glucides, pas, expiration
+du capteur).
 
 1. Installe la carte **apexcharts-card** via HACS (catégorie *Interface*).
 2. Tableau de bord > **Modifier** > **Ajouter une carte** > **Manuel**, colle le contenu du

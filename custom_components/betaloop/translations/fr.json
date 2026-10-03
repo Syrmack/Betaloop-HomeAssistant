@@ -66,6 +66,8 @@
       "insulin": { "name": "Insuline (fenêtre)" },
       "carbs": { "name": "Glucides (fenêtre)" },
       "server_version": { "name": "Version du serveur" },
+      "sensor_expiry": { "name": "Expiration du capteur" },
+      "sensor_days_left": { "name": "Jours restants du capteur" },
       "steps_today": { "name": "Pas aujourd'hui" }
     }
   }

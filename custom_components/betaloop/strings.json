@@ -66,6 +66,8 @@
       "insulin": { "name": "Insulin (window)" },
       "carbs": { "name": "Carbs (window)" },
       "server_version": { "name": "Server version" },
+      "sensor_expiry": { "name": "Sensor expiry" },
+      "sensor_days_left": { "name": "Sensor days left" },
       "steps_today": { "name": "Steps today" }
     }
   }
