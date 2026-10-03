@@ -65,6 +65,7 @@
       "estimated_hba1c": { "name": "HbA1c estimée" },
       "insulin": { "name": "Insuline (fenêtre)" },
       "carbs": { "name": "Glucides (fenêtre)" },
+      "server_version": { "name": "Version du serveur" },
       "steps_today": { "name": "Pas aujourd'hui" }
     }
   }

@@ -16,6 +16,7 @@ from homeassistant.components.sensor import (
 from homeassistant.const import (
     CONF_URL,
     PERCENTAGE,
+    EntityCategory,
     UnitOfBloodGlucoseConcentration,
     UnitOfMass,
 )
@@ -202,6 +203,14 @@ SENSORS: tuple[BetaloopSensorDescription, ...] = (
         icon="mdi:shoe-print",
         value_fn=lambda d: d.steps_today,
     ),
+    BetaloopSensorDescription(
+        key="server_version",
+        translation_key="server_version",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:server",
+        # None (inconnu) : serveur antérieur à la 1.4, qui n'expose pas sa version.
+        value_fn=lambda d: d.server_version,
+    ),
 )
 
 
@@ -230,6 +239,7 @@ class BetaloopSensor(CoordinatorEntity[BetaloopCoordinator], SensorEntity):
             name="Betaloop",
             manufacturer="Betaloop",
             model="Betaloop Server",
+            sw_version=coordinator.data.server_version,
             entry_type=DeviceEntryType.SERVICE,
             configuration_url=entry.data[CONF_URL] + "/docs",
         )

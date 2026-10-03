@@ -10,6 +10,7 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -39,6 +40,7 @@ class BetaloopData:
     steps_today: int | None = None
     summary_24h: dict = field(default_factory=dict)
     summary_hba1c: dict = field(default_factory=dict)
+    server_version: str | None = None
 
 
 class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
@@ -58,6 +60,7 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
         )
         self.api = api
         self.history_hours: int = entry.options.get(CONF_HISTORY_HOURS, DEFAULT_HISTORY_HOURS)
+        self._server_version: str | None = None
 
     async def _async_update_data(self) -> BetaloopData:
         now = dt_util.now()
@@ -65,7 +68,9 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
         today_ts = int(dt_util.start_of_local_day(now).timestamp() * 1000)
 
         try:
-            latest, readings, doses, meals, steps, summary_24h, summary_hba1c = await asyncio.gather(
+            (
+                latest, readings, doses, meals, steps, summary_24h, summary_hba1c, server_version
+            ) = await asyncio.gather(
                 self.api.latest_glucose(),
                 self.api.glucose(from_ts),
                 self.api.doses(from_ts),
@@ -73,11 +78,14 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
                 self.api.steps(today_ts),
                 self.api.summary(1),
                 self.api.summary(HBA1C_PERIOD_DAYS),
+                self.api.server_version(),
             )
         except BetaloopAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except BetaloopError as err:
             raise UpdateFailed(str(err)) from err
+
+        self._update_device_sw_version(server_version)
 
         # L'API renvoie du plus récent au plus ancien ; un graphique veut l'ordre chronologique.
         return BetaloopData(
@@ -89,4 +97,17 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
             steps_today=sum(s["count"] for s in steps) if steps else None,
             summary_24h=summary_24h,
             summary_hba1c=summary_hba1c,
+            server_version=server_version,
         )
+
+    def _update_device_sw_version(self, version: str | None) -> None:
+        """Reporte une nouvelle version du serveur (mise à jour déployée) sur l'appareil : la
+        DeviceInfo des capteurs n'est lue qu'à leur création. Au premier cycle l'appareil n'existe
+        pas encore ; il sera créé avec la bonne version (voir BetaloopSensor)."""
+        if version == self._server_version:
+            return
+        self._server_version = version
+        registry = dr.async_get(self.hass)
+        device = registry.async_get_device(identifiers={(DOMAIN, self.config_entry.entry_id)})
+        if device is not None:
+            registry.async_update_device(device.id, sw_version=version)

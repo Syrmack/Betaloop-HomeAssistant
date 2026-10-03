@@ -65,6 +65,7 @@
       "estimated_hba1c": { "name": "Estimated HbA1c" },
       "insulin": { "name": "Insulin (window)" },
       "carbs": { "name": "Carbs (window)" },
+      "server_version": { "name": "Server version" },
       "steps_today": { "name": "Steps today" }
     }
   }
