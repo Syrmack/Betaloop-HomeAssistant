@@ -44,7 +44,7 @@ Options (bouton **Configurer** sur l'intégration) :
 
 | Option | Défaut | Rôle |
 |---|---|---|
-| Intervalle d'interrogation | 5 min | Fréquence d'appel au serveur. L'app synchronise à chaque relevé (toutes les 5 min par défaut). |
+| Intervalle d'interrogation | 5 min | Fréquence d'appel au serveur. L'app synchronise à chaque relevé (toutes les 5 min par défaut). L'HbA1c sur 14 jours, la version du serveur, le capteur actif et les seuils de l'app, qui ne bougent presque pas, ne sont relus que toutes les heures. |
 | Fenêtre d'historique | 24 h | Durée de relevés/doses/repas exposée pour le graphique (max 72 h). |
 
 Si la clé API change sur le serveur, Home Assistant affiche une notification pour saisir
@@ -120,11 +120,8 @@ les deux sont sur le même réseau.
 
 ### Prioritaires
 
-1. **Moins de charge.** Chaque interrogation (toutes les 5 min) envoie 9 requêtes au
-   serveur, dont un `summary` sur 14 jours pour l'HbA1c, qui ne bouge presque pas d'un
-   cycle à l'autre. Il suffit de rafraîchir l'HbA1c, la version du serveur et le capteur
-   environ toutes les heures ; l'intégration utilisera aussi la route agrégée du serveur
-   si elle est ajoutée.
+Toutes faites : seuils de la plage cible lus depuis le serveur (1.7), charge réduite (5
+requêtes par interrogation au lieu de 9, le reste relu toutes les heures).
 
 ### Probables
 
