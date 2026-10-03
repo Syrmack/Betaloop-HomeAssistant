@@ -8,5 +8,5 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://gitea.midgar.me/syrma/Betaloop-HomeAssistant/issues",
   "requirements": [],
-  "version": "1.4.0"
+  "version": "1.4.1"
 }
