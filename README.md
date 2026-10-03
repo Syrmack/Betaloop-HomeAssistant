@@ -44,7 +44,7 @@ Options (bouton **Configurer** sur l'intégration) :
 
 | Option | Défaut | Rôle |
 |---|---|---|
-| Intervalle d'interrogation | 5 min | Fréquence d'appel au serveur. L'app ne synchronise que toutes les ~15 min. |
+| Intervalle d'interrogation | 5 min | Fréquence d'appel au serveur. L'app synchronise à chaque relevé (toutes les 5 min par défaut). |
 | Fenêtre d'historique | 24 h | Durée de relevés/doses/repas exposée pour le graphique (max 72 h). |
 
 Si la clé API change sur le serveur, Home Assistant affiche une notification pour saisir
