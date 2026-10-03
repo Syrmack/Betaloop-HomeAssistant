@@ -1,4 +1,4 @@
-"""Capteurs Betaloop : glycémie courante, tendance, statistiques, insuline, glucides, pas,
+"""Capteurs Betaloop : glycémie courante, tendance, variation, statistiques, insuline, glucides, pas,
 expiration du capteur CGM."""
 
 from __future__ import annotations
@@ -29,6 +29,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    DELTA_MAX_GAP,
     DOMAIN,
     HBA1C_PERIOD_DAYS,
     STALE_AFTER,
@@ -61,6 +62,35 @@ def _fresh_latest(data: BetaloopData) -> dict | None:
 def _trend(data: BetaloopData) -> str | None:
     latest = _fresh_latest(data)
     return TREND_ARROWS.get(latest["trend_arrow"]) if latest else None
+
+
+def _delta_pair(data: BetaloopData) -> tuple[dict, dict] | None:
+    """Dernier relevé (s'il est récent) et le précédent, s'ils sont espacés de moins de DELTA_MAX_GAP."""
+    if _fresh_latest(data) is None or len(data.readings) < 2:
+        return None
+    previous, latest = data.readings[-2], data.readings[-1]
+    gap_ms = latest["timestamp"] - previous["timestamp"]
+    if gap_ms <= 0 or gap_ms > DELTA_MAX_GAP.total_seconds() * 1000:
+        return None
+    return previous, latest
+
+
+def _delta(data: BetaloopData) -> int | None:
+    pair = _delta_pair(data)
+    return pair[1]["value_mgdl"] - pair[0]["value_mgdl"] if pair else None
+
+
+def _delta_attrs(data: BetaloopData) -> dict[str, Any]:
+    # L'écart varie : un relevé par minute en surveillance continue, un par quart d'heure dans
+    # l'historique LibreLinkUp. "+12" ne se lit pas pareil sur 1 ou 15 minutes.
+    pair = _delta_pair(data)
+    if pair is None:
+        return {"minutes": None, "previous_time": None}
+    previous, latest = pair
+    return {
+        "minutes": max(1, round((latest["timestamp"] - previous["timestamp"]) / 60000)),
+        "previous_time": _ts(previous["timestamp"]).isoformat(),
+    }
 
 
 def _glucose_attrs(data: BetaloopData) -> dict[str, Any]:
@@ -162,6 +192,18 @@ SENSORS: tuple[BetaloopSensorDescription, ...] = (
         options=list(TREND_ARROWS.values()),
         value_fn=_trend,
         icon_fn=lambda d: TREND_ICONS.get(_trend(d) or "", "mdi:help"),
+    ),
+    BetaloopSensorDescription(
+        key="glucose_delta",
+        translation_key="glucose_delta",
+        # Classe concentration : HA convertit aussi la variation en mmol/L si demandé (simple
+        # facteur, sans décalage, donc valable pour une différence).
+        device_class=SensorDeviceClass.BLOOD_GLUCOSE_CONCENTRATION,
+        native_unit_of_measurement=MGDL,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:plus-minus-variant",
+        value_fn=_delta,
+        attrs_fn=_delta_attrs,
     ),
     BetaloopSensorDescription(
         key="last_reading",

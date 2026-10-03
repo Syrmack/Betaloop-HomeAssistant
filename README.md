@@ -1,7 +1,7 @@
 # Betaloop pour Home Assistant
 
 Intégration Home Assistant qui lit les données du [serveur Betaloop](https://gitea.midgar.me/syrma/Betaloop-server)
-(glycémie, tendance, statistiques, insuline, glucides, pas, expiration du capteur) et les expose sous forme de
+(glycémie, tendance, variation, statistiques, insuline, glucides, pas, expiration du capteur) et les expose sous forme de
 capteurs, avec une carte de tableau de bord prête à l'emploi pour le graphique.
 
 L'intégration ne fait que **lire** : elle interroge les routes `GET /api/v1/*` du serveur
@@ -56,6 +56,7 @@ la nouvelle.
 |---|---|
 | `sensor.betaloop_glucose` | Dernière glycémie (mg/dL). *Inconnue* si le dernier relevé a plus de 45 min. Attribut `readings` : la série pour le graphique ; `target_low` / `target_high` : les seuils de l'app. |
 | `sensor.betaloop_trend` | Tendance : baisse rapide / baisse / stable / hausse / hausse rapide |
+| `sensor.betaloop_glucose_delta` | Variation (mg/dL) depuis le relevé précédent, par ex. `+4` ; attribut `minutes` : l'écart entre les deux relevés (1 min en surveillance continue, 15 min dans l'historique LibreLinkUp). *Inconnue* si le dernier relevé est périmé ou si le précédent a plus de 20 min. |
 | `sensor.betaloop_last_reading` | Horodatage du dernier relevé reçu par le serveur |
 | `sensor.betaloop_average_24h` | Glycémie moyenne sur 24 h |
 | `sensor.betaloop_time_in_range_24h` | % de temps dans la cible sur 24 h, entre les seuils réglés dans l'app (70–180 mg/dL par défaut) |
@@ -83,7 +84,7 @@ La carte [`dashboard/betaloop-card.yaml`](dashboard/betaloop-card.yaml) affiche 
 glycémie des dernières 24 h colorée selon la plage cible (rouge < 70, vert, orange > 180 :
 les seuils par défaut, à changer dans le fichier si tu les as modifiés dans l'app),
 avec la bande cible en fond, les doses d'insuline et les glucides en barres, et une ligne
-de tuiles (tendance, temps dans la cible, moyenne, HbA1c, insuline, glucides, pas, expiration
+de tuiles (tendance, variation, temps dans la cible, moyenne, HbA1c, insuline, glucides, pas, expiration
 du capteur).
 
 1. Installe la carte **apexcharts-card** via HACS (catégorie *Interface*).
@@ -129,6 +130,5 @@ requêtes par interrogation au lieu de 9, le reste relu toutes les heures).
   qui expire dans moins de 24 h. Et des événements (`betaloop_hypo`...) pour, par
   exemple, faire clignoter une lampe la nuit : un second canal d'alerte, indépendant du
   téléphone.
-- **Capteur de variation** (delta en mg/dL depuis le relevé précédent).
 - **Diagnostics** (`diagnostics.py`, clé API masquée) pour le dépannage.
 - **Tests** avec `pytest-homeassistant-custom-component`.

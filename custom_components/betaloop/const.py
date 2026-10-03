@@ -28,6 +28,10 @@ TARGET_HIGH_MGDL = 180
 # Une valeur plus ancienne que ça est considérée périmée (capteur déconnecté, téléphone éteint...).
 STALE_AFTER = timedelta(minutes=45)
 
+# Au-delà de cet écart avec le relevé précédent, la variation n'a plus de sens (trou dans les
+# données) : même seuil que l'app (GlucoseTrend.DELTA_MAX_GAP_MS).
+DELTA_MAX_GAP = timedelta(minutes=20)
+
 # Codes TrendArrow de LibreLinkUp (voir GlucosePoller.kt côté app).
 TREND_ARROWS = {
     1: "falling_fast",

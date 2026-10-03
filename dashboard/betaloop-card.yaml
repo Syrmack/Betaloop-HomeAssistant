@@ -110,6 +110,8 @@ cards:
     entities:
       - entity: sensor.betaloop_trend
         name: Tendance
+      - entity: sensor.betaloop_glucose_delta
+        name: Variation
       - entity: sensor.betaloop_time_in_range_24h
         name: Dans la cible
       - entity: sensor.betaloop_average_24h

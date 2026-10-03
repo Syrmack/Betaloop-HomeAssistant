@@ -57,6 +57,7 @@
           "rising_fast": "Hausse rapide"
         }
       },
+      "glucose_delta": { "name": "Variation glycémie" },
       "last_reading": { "name": "Dernier relevé" },
       "average_24h": { "name": "Glycémie moyenne (24 h)" },
       "time_in_range_24h": { "name": "Temps dans la cible (24 h)" },
