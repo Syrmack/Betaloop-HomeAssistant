@@ -10,14 +10,26 @@
         },
         "data_description": {
           "url": "For example http://192.168.1.10:8000",
-          "api_key": "Value of BETALOOP_API_KEY in the server's .env file"
+          "api_key": "Key created for Home Assistant with the read scope (POST /api/v1/keys), or the value of BETALOOP_API_KEY in the server's .env file"
         }
       },
       "reauth_confirm": {
         "title": "New API key",
-        "description": "The Betaloop server rejected the API key. Enter the current value of BETALOOP_API_KEY.",
+        "description": "The Betaloop server rejected the API key (revoked, expired or changed). Enter a valid key with the read scope.",
         "data": {
           "api_key": "API key"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Betaloop",
+        "description": "Change the server URL or the API key. The new value is checked against the server before being saved.",
+        "data": {
+          "url": "Server URL",
+          "api_key": "New API key"
+        },
+        "data_description": {
+          "url": "For example http://192.168.1.10:8000",
+          "api_key": "Leave empty to keep the current key. A key with the read scope is enough."
         }
       }
     },
@@ -27,7 +39,8 @@
     },
     "abort": {
       "already_configured": "This server is already configured.",
-      "reauth_successful": "API key updated."
+      "reauth_successful": "API key updated.",
+      "reconfigure_successful": "Configuration updated."
     }
   },
   "options": {

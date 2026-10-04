@@ -94,6 +94,37 @@ class BetaloopConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Bouton « Reconfigurer » de l'intégration : changer l'URL du serveur ou la clé API à tout
+        moment, sans attendre que le serveur refuse l'ancienne. Clé laissée vide = clé actuelle."""
+        errors: dict[str, str] = {}
+        entry = self._get_reconfigure_entry()
+        if user_input is not None:
+            url = user_input[CONF_URL].rstrip("/")
+            api_key = user_input.get(CONF_API_KEY) or entry.data[CONF_API_KEY]
+            if url != entry.unique_id:
+                await self.async_set_unique_id(url)
+                self._abort_if_unique_id_configured()
+            if (error := await self._validate(url, api_key)) is None:
+                return self.async_update_reload_and_abort(
+                    entry, unique_id=url, data_updates={CONF_URL: url, CONF_API_KEY: api_key}
+                )
+            errors["base"] = error
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=self.add_suggested_values_to_schema(
+                vol.Schema(
+                    {
+                        vol.Required(CONF_URL): TextSelector(TextSelectorConfig(type=TextSelectorType.URL)),
+                        vol.Optional(CONF_API_KEY): _PASSWORD,
+                    }
+                ),
+                {CONF_URL: (user_input or entry.data)[CONF_URL]},
+            ),
+            errors=errors,
+        )
+
     @staticmethod
     def async_get_options_flow(config_entry) -> BetaloopOptionsFlow:
         return BetaloopOptionsFlow()

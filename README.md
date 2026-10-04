@@ -38,7 +38,9 @@ l'URL **GitHub** dans HACS > ⋮ > **Dépôts personnalisés**, catégorie **Int
 **Paramètres > Appareils et services > Ajouter une intégration > Betaloop**
 
 - **URL du serveur** : par ex. `http://192.168.1.10:8000` (la même que dans l'app)
-- **Clé API** : la valeur de `BETALOOP_API_KEY` dans le `.env` du serveur
+- **Clé API** : de préférence une clé dédiée avec le seul droit `read`, créée sur le serveur
+  (1.9 ou plus) avec `POST /api/v1/keys` et révocable ; sinon la valeur de `BETALOOP_API_KEY`
+  dans le `.env` du serveur. L'intégration ne fait que lire.
 
 Options (bouton **Configurer** sur l'intégration) :
 
@@ -47,8 +49,10 @@ Options (bouton **Configurer** sur l'intégration) :
 | Intervalle d'interrogation | 5 min | Fréquence d'appel au serveur. L'app synchronise à chaque relevé (toutes les 5 min par défaut). L'HbA1c sur 14 jours, la version du serveur, le capteur actif et les seuils de l'app, qui ne bougent presque pas, ne sont relus que toutes les heures. |
 | Fenêtre d'historique | 24 h | Durée de relevés/doses/repas exposée pour le graphique (max 72 h). |
 
-Si la clé API change sur le serveur, Home Assistant affiche une notification pour saisir
-la nouvelle.
+Pour changer l'URL du serveur ou la clé API : menu **⋮ > Reconfigurer** sur l'intégration.
+La clé laissée vide reste la même, et la nouvelle valeur est vérifiée auprès du serveur avant
+d'être enregistrée. Si le serveur refuse la clé (révoquée, expirée ou changée), Home Assistant
+affiche aussi une notification pour en saisir une nouvelle.
 
 ## Capteurs
 
