@@ -138,3 +138,7 @@ requêtes par interrogation au lieu de 9, le reste relu toutes les heures).
   téléphone.
 - **Diagnostics** (`diagnostics.py`, clé API masquée) pour le dépannage.
 - **Tests** avec `pytest-homeassistant-custom-component`.
+- **Statistiques de référence** (serveur 1.8 : bloc `consensus` de `/api/v1/summary`, route
+  `/api/v1/agp`) : CV, GMI, temps dans les 5 paliers, couverture. Pas prévu pour l'instant :
+  ces indicateurs servent aux échanges avec le diabétologue (onglet Stats et rapport PDF de
+  l'app), pas au suivi au quotidien que vise l'intégration.
