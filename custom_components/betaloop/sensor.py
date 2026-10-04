@@ -164,6 +164,27 @@ def _range_attrs(data: BetaloopData) -> dict[str, Any]:
     }
 
 
+def _gmi(data: BetaloopData) -> float | None:
+    """GMI du serveur (1.8 ou plus), le même que l'onglet Stats de l'app : relevés ramenés à une
+    valeur par quart d'heure, 3,31 + 0,02392 × moyenne. Serveur plus ancien : HbA1c estimée ADAG."""
+    consensus = data.summary_hba1c.get("consensus")
+    if consensus is not None:
+        return consensus.get("gmi_pct")
+    return data.summary_hba1c.get("estimated_hba1c_percent")
+
+
+def _gmi_attrs(data: BetaloopData) -> dict[str, Any]:
+    consensus = data.summary_hba1c.get("consensus") or {}
+    return {
+        "period_days": HBA1C_PERIOD_DAYS,
+        "formula": "GMI" if consensus else "ADAG",
+        # Représentatif seulement si au moins 70 % de la période est couverte par des relevés.
+        "coverage_pct": consensus.get("coverage_pct"),
+        "average_mgdl": consensus.get("average_mgdl"),
+        "estimated_hba1c_adag": data.summary_hba1c.get("estimated_hba1c_percent"),
+    }
+
+
 def _total_carbs(data: BetaloopData) -> float:
     return round(sum(m.get("carbs_grams") or 0 for m in data.meals), 1)
 
@@ -252,8 +273,8 @@ SENSORS: tuple[BetaloopSensorDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:water-percent",
-        value_fn=lambda d: d.summary_hba1c.get("estimated_hba1c_percent"),
-        attrs_fn=lambda d: {"period_days": HBA1C_PERIOD_DAYS},
+        value_fn=_gmi,
+        attrs_fn=_gmi_attrs,
     ),
     BetaloopSensorDescription(
         key="insulin",

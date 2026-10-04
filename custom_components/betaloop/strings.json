@@ -76,7 +76,7 @@
       "time_in_range_24h": { "name": "Time in range (24 h)" },
       "time_below_range_24h": { "name": "Time below range (24 h)" },
       "time_above_range_24h": { "name": "Time above range (24 h)" },
-      "estimated_hba1c": { "name": "Estimated HbA1c" },
+      "estimated_hba1c": { "name": "GMI (estimated HbA1c)" },
       "insulin": { "name": "Insulin (window)" },
       "carbs": { "name": "Carbs (window)" },
       "server_version": { "name": "Server version" },

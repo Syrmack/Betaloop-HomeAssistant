@@ -128,7 +128,7 @@ cards:
       - entity: sensor.betaloop_average_24h
         name: Moyenne 24 h
       - entity: sensor.betaloop_estimated_hba1c
-        name: HbA1c est.
+        name: GMI
       - entity: sensor.betaloop_insulin
         name: Insuline 24 h
       - entity: sensor.betaloop_carbs

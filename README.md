@@ -46,7 +46,7 @@ Options (bouton **Configurer** sur l'intégration) :
 
 | Option | Défaut | Rôle |
 |---|---|---|
-| Intervalle d'interrogation | 5 min | Fréquence d'appel au serveur. L'app synchronise à chaque relevé (toutes les 5 min par défaut). L'HbA1c sur 14 jours, la version du serveur, le capteur actif et les seuils de l'app, qui ne bougent presque pas, ne sont relus que toutes les heures. |
+| Intervalle d'interrogation | 5 min | Fréquence d'appel au serveur. L'app synchronise à chaque relevé (toutes les 5 min par défaut). Le GMI sur 14 jours, la version du serveur, le capteur actif et les seuils de l'app, qui ne bougent presque pas, ne sont relus que toutes les heures. |
 | Fenêtre d'historique | 24 h | Durée de relevés/doses/repas exposée pour le graphique (max 72 h). |
 
 Pour changer l'URL du serveur ou la clé API : menu **⋮ > Reconfigurer** sur l'intégration.
@@ -66,7 +66,7 @@ affiche aussi une notification pour en saisir une nouvelle.
 | `sensor.betaloop_time_in_range_24h` | % de temps dans la cible sur 24 h, entre les seuils réglés dans l'app (70–180 mg/dL par défaut) |
 | `sensor.betaloop_time_below_range_24h` | % sous le seuil bas sur 24 h |
 | `sensor.betaloop_time_above_range_24h` | % au-dessus du seuil haut sur 24 h |
-| `sensor.betaloop_estimated_hba1c` | HbA1c estimée sur 14 jours (formule ADAG, comme le serveur) |
+| `sensor.betaloop_estimated_hba1c` | GMI (HbA1c estimée) sur 14 jours, le même que l'onglet Stats de l'app : relevés ramenés à une valeur par quart d'heure, 3,31 + 0,02392 × moyenne. Attributs : `coverage_pct` (représentatif à partir de 70 %), `average_mgdl`, `estimated_hba1c_adag` (ancienne formule). Avec un serveur antérieur à la 1.8, HbA1c estimée ADAG (`formula`). |
 | `sensor.betaloop_insulin` | Total d'insuline sur la fenêtre d'historique ; attributs : dernière dose, liste `doses` |
 | `sensor.betaloop_carbs` | Total de glucides sur la fenêtre d'historique ; attributs : dernier repas, liste `meals` |
 | `sensor.betaloop_steps_today` | Pas depuis minuit |

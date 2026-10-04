@@ -76,7 +76,7 @@
       "time_in_range_24h": { "name": "Temps dans la cible (24 h)" },
       "time_below_range_24h": { "name": "Temps sous la cible (24 h)" },
       "time_above_range_24h": { "name": "Temps au-dessus de la cible (24 h)" },
-      "estimated_hba1c": { "name": "HbA1c estimée" },
+      "estimated_hba1c": { "name": "GMI (HbA1c estimée)" },
       "insulin": { "name": "Insuline (fenêtre)" },
       "carbs": { "name": "Glucides (fenêtre)" },
       "server_version": { "name": "Version du serveur" },
