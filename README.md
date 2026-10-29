@@ -61,6 +61,9 @@ affiche aussi une notification pour en saisir une nouvelle.
 | `sensor.betaloop_glucose` | Dernière glycémie (mg/dL). *Inconnue* si le dernier relevé a plus de 45 min. Attribut `readings` : la série pour le graphique ; `target_low` / `target_high` : les seuils de l'app. |
 | `sensor.betaloop_trend` | Tendance : baisse rapide / baisse / stable / hausse / hausse rapide |
 | `sensor.betaloop_glucose_delta` | Variation (mg/dL) depuis le relevé précédent, par ex. `+4` ; attribut `minutes` : l'écart entre les deux relevés (1 min en surveillance continue, 15 min dans l'historique LibreLinkUp). *Inconnue* si le dernier relevé est périmé ou si le précédent a plus de 20 min. |
+| `sensor.betaloop_predicted_glucose` | Glycémie prévue dans 1 h (mg/dL), le même calcul que la courbe « Prévision » de l'app : tant qu'une dose d'insuline rapide agit ou qu'un repas aux glucides saisis s'absorbe, avec les paramètres du calculateur de bolus. Attributs : `in_30min`, `in_120min`, `until` (fin d'action ou d'absorption), `forecast` (la courbe, pour le graphique) et `reason` (pourquoi elle est *inconnue* : rien n'agit, pas de relevé depuis 15 min, repas sans glucides, paramètres pas encore envoyés par l'app). Nécessite le serveur 1.14. Une projection, pas une certitude. |
+| `sensor.betaloop_predicted_low` | Point le plus bas de la prévision (mg/dL) ; attribut `time`. Pratique pour une automatisation « hypo prévue » (sous 70). |
+| `sensor.betaloop_predicted_high` | Point le plus haut de la prévision (mg/dL), le pic après un repas ; attribut `time`. |
 | `sensor.betaloop_last_reading` | Horodatage du dernier relevé reçu par le serveur |
 | `sensor.betaloop_average_24h` | Glycémie moyenne sur 24 h |
 | `sensor.betaloop_time_in_range_24h` | % de temps dans la cible sur 24 h, entre les seuils réglés dans l'app (70–180 mg/dL par défaut) |
@@ -79,7 +82,7 @@ la cible). Avec un serveur plus ancien, ce sont ceux par défaut, 70 et 180 mg/d
 
 Comme `sensor.betaloop_glucose` utilise la classe *concentration de glucose sanguin*, tu
 peux l'afficher en mmol/L depuis les paramètres de l'entité. Les séries en attributs
-(`readings`, `doses`, `meals`) restent en mg/dL, en epoch millisecondes, et ne sont pas
+(`readings`, `doses`, `meals`, `forecast`) restent en mg/dL, en epoch millisecondes, et ne sont pas
 enregistrées dans la base du recorder (elles sont rechargées à chaque interrogation).
 
 ## Graphique dans le tableau de bord
@@ -103,6 +106,24 @@ Home Assistant. Avec un serveur antérieur à la 1.7, ce sont ceux par défaut, 
 
 Le graphique lit directement l'historique fourni par le serveur : il est complet dès
 l'installation, sans attendre que Home Assistant accumule son propre historique.
+
+Pour ajouter la **glycémie prévue** au graphique, ajoute cette série dans `series`, et
+`span: { offset: "+2h" }` sous `graph_span` pour voir les 2 prochaines heures :
+
+```yaml
+        - entity: sensor.betaloop_predicted_glucose
+          name: Prévision
+          yaxis_id: glucose
+          type: line
+          stroke_width: 2
+          stroke_dash: 4
+          color: "#757575"
+          extend_to: false
+          show:
+            in_header: false
+          data_generator: |
+            return entity.attributes.forecast || [];
+```
 
 Sans apexcharts-card, une carte native fonctionne aussi, mais seulement avec l'historique
 enregistré par Home Assistant depuis l'installation :
@@ -131,8 +152,8 @@ les deux sont sur le même réseau.
 
 ### Prioritaires
 
-Toutes faites : seuils de la plage cible lus depuis le serveur (1.7), charge réduite (5
-requêtes par interrogation au lieu de 9, le reste relu toutes les heures).
+Toutes faites : seuils de la plage cible lus depuis le serveur (1.7), charge réduite (6
+requêtes par interrogation, prévision comprise, au lieu de 10 ; le reste relu toutes les heures).
 
 ### Probables
 
