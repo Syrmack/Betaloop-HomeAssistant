@@ -71,6 +71,9 @@
         }
       },
       "glucose_delta": { "name": "Variation glycémie" },
+      "predicted_glucose": { "name": "Glycémie prévue (1 h)" },
+      "predicted_low": { "name": "Point bas prévu" },
+      "predicted_high": { "name": "Pic prévu" },
       "last_reading": { "name": "Dernier relevé" },
       "average_24h": { "name": "Glycémie moyenne (24 h)" },
       "time_in_range_24h": { "name": "Temps dans la cible (24 h)" },

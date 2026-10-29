@@ -127,6 +127,14 @@ class BetaloopApi:
         except BetaloopNotFoundError:
             return None
 
+    async def prediction(self, tz: str | None) -> dict | None:
+        """Glycémie prévue (available, in_60min_mgdl, lowest, highest, points...) ; None si le
+        serveur est antérieur à la 1.14 (pas de route /api/v1/prediction)."""
+        try:
+            return await self._get("/api/v1/prediction", {"tz": tz})
+        except BetaloopNotFoundError:
+            return None
+
     async def server_version(self) -> str | None:
         """Version déployée du serveur ; None s'il est antérieur à la 1.4 (/health sans version)."""
         return (await self._get("/health")).get("version")

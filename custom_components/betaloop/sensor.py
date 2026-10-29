@@ -1,5 +1,5 @@
-"""Capteurs Betaloop : glycémie courante, tendance, variation, statistiques, insuline, glucides, pas,
-expiration du capteur CGM."""
+"""Capteurs Betaloop : glycémie courante, tendance, variation, glycémie prévue, statistiques, insuline,
+glucides, pas, expiration du capteur CGM."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ MGDL = UnitOfBloodGlucoseConcentration.MILLIGRAMS_PER_DECILITER
 
 # Séries destinées au graphique : utiles en direct, mais trop volumineuses pour être
 # stockées à chaque changement d'état dans la base du recorder.
-UNRECORDED_ATTRIBUTES = frozenset({"readings", "doses", "meals"})
+UNRECORDED_ATTRIBUTES = frozenset({"readings", "doses", "meals", "forecast"})
 
 
 def _ts(ms: int | None) -> datetime | None:
@@ -185,6 +185,42 @@ def _gmi_attrs(data: BetaloopData) -> dict[str, Any]:
     }
 
 
+def _prediction(data: BetaloopData) -> dict | None:
+    """Prévision du serveur (1.14), seulement si elle est disponible (une dose agit ou un repas
+    s'absorbe, relevé récent, paramètres du calculateur reçus)."""
+    prediction = data.prediction
+    return prediction if prediction and prediction.get("available") else None
+
+
+def _prediction_point(data: BetaloopData, key: str) -> int | None:
+    point = (_prediction(data) or {}).get(key)
+    return point["mgdl"] if point else None
+
+
+def _prediction_point_attrs(key: str) -> Callable[[BetaloopData], dict[str, Any]]:
+    def attrs(data: BetaloopData) -> dict[str, Any]:
+        point = (_prediction(data) or {}).get(key)
+        return {"time": _ts(point["timestamp"]).isoformat() if point else None}
+
+    return attrs
+
+
+def _prediction_attrs(data: BetaloopData) -> dict[str, Any]:
+    prediction = data.prediction or {}
+    available = _prediction(data) is not None
+    return {
+        # Pourquoi il n'y a pas de prévision (rien n'agit, pas de relevé récent...) ; None si elle
+        # est disponible ou si le serveur est antérieur à la 1.14.
+        "reason": prediction.get("reason"),
+        "in_30min": prediction.get("in_30min_mgdl"),
+        "in_120min": prediction.get("in_120min_mgdl"),
+        "until": _ts(prediction["until"]).isoformat() if available else None,
+        # [[epoch ms, mg/dL], ...] toutes les 5 min jusqu'à la fin d'action ou d'absorption, pour
+        # apexcharts-card.
+        "forecast": [[p["timestamp"], p["mgdl"]] for p in prediction.get("points", [])] if available else [],
+    }
+
+
 def _total_carbs(data: BetaloopData) -> float:
     return round(sum(m.get("carbs_grams") or 0 for m in data.meals), 1)
 
@@ -225,6 +261,38 @@ SENSORS: tuple[BetaloopSensorDescription, ...] = (
         icon="mdi:plus-minus-variant",
         value_fn=_delta,
         attrs_fn=_delta_attrs,
+    ),
+    # Glycémie prévue (serveur 1.14) : inconnue tant qu'aucune dose ni aucun repas aux glucides
+    # saisis n'agit. Une projection des paramètres du calculateur, pas une certitude.
+    BetaloopSensorDescription(
+        key="predicted_glucose",
+        translation_key="predicted_glucose",
+        device_class=SensorDeviceClass.BLOOD_GLUCOSE_CONCENTRATION,
+        native_unit_of_measurement=MGDL,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:chart-bell-curve-cumulative",
+        value_fn=lambda d: (p := _prediction(d)) and p.get("in_60min_mgdl"),
+        attrs_fn=_prediction_attrs,
+    ),
+    BetaloopSensorDescription(
+        key="predicted_low",
+        translation_key="predicted_low",
+        device_class=SensorDeviceClass.BLOOD_GLUCOSE_CONCENTRATION,
+        native_unit_of_measurement=MGDL,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:arrow-down-bold-circle-outline",
+        value_fn=lambda d: _prediction_point(d, "lowest"),
+        attrs_fn=_prediction_point_attrs("lowest"),
+    ),
+    BetaloopSensorDescription(
+        key="predicted_high",
+        translation_key="predicted_high",
+        device_class=SensorDeviceClass.BLOOD_GLUCOSE_CONCENTRATION,
+        native_unit_of_measurement=MGDL,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:arrow-up-bold-circle-outline",
+        value_fn=lambda d: _prediction_point(d, "highest"),
+        attrs_fn=_prediction_point_attrs("highest"),
     ),
     BetaloopSensorDescription(
         key="last_reading",

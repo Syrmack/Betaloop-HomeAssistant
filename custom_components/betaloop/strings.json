@@ -71,6 +71,9 @@
         }
       },
       "glucose_delta": { "name": "Glucose change" },
+      "predicted_glucose": { "name": "Predicted glucose (1 h)" },
+      "predicted_low": { "name": "Predicted low" },
+      "predicted_high": { "name": "Predicted peak" },
       "last_reading": { "name": "Last reading" },
       "average_24h": { "name": "Average glucose (24 h)" },
       "time_in_range_24h": { "name": "Time in range (24 h)" },

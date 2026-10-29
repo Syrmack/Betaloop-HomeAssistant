@@ -46,6 +46,9 @@ class BetaloopData:
     sensor: dict | None = None
     # Seuils de l'app (low_mgdl, high_mgdl) ; None si le serveur est antérieur à la 1.7.
     settings: dict | None = None
+    # Glycémie prévue (available, reason, in_60min_mgdl, lowest, highest, points...) ; None si le
+    # serveur est antérieur à la 1.14.
+    prediction: dict | None = None
 
 
 @dataclass
@@ -96,12 +99,14 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
         )
 
         try:
-            readings, doses, meals, steps, summary_24h, slow = await asyncio.gather(
+            readings, doses, meals, steps, summary_24h, prediction, slow = await asyncio.gather(
                 self.api.glucose(from_ts),
                 self.api.doses(from_ts),
                 self.api.meals(from_ts),
                 self.api.steps(today_ts),
                 self.api.summary(1),
+                # Fuseau de HA : la tranche horaire (ratio, sensibilité) est celle de l'heure locale.
+                self.api.prediction(self.hass.config.time_zone),
                 self._fetch_slow() if refresh_slow else _cached(self._slow),
             )
             # Le relevé le plus récent est en tête de la série (ordre décroissant) ; une requête à
@@ -129,6 +134,7 @@ class BetaloopCoordinator(DataUpdateCoordinator[BetaloopData]):
             server_version=slow.server_version,
             sensor=slow.sensor,
             settings=slow.settings,
+            prediction=prediction,
         )
 
     async def _fetch_slow(self) -> _SlowData:
