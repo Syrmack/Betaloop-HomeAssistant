@@ -9,6 +9,17 @@ avec la même clé API que l'app, et n'écrit jamais rien.
 
 ## Installation
 
+### Via HACS (conseillé)
+
+1. Dans HACS > ⋮ > **Dépôts personnalisés**, ajoute `https://github.com/Syrmack/Betaloop-HomeAssistant`,
+   catégorie **Intégration**.
+2. Cherche **Betaloop** dans HACS, télécharge-le, puis redémarre Home Assistant.
+
+HACS signale ensuite les nouvelles versions.
+
+Le dépôt principal est sur [Gitea](https://gitea.midgar.me/syrma/Betaloop-HomeAssistant). Le dépôt GitHub
+en est un miroir à sens unique : ce qui y est modifié directement est écrasé au push suivant.
+
 ### À la main
 
 Copie le dossier `custom_components/betaloop` dans le dossier `config/custom_components/`
@@ -25,13 +36,6 @@ cd /tmp && rm -rf betaloop-ha \
   && cp -r betaloop-ha/custom_components/betaloop /config/custom_components/ \
   && ha core restart
 ```
-
-### Via HACS
-
-HACS ne sait lire que des dépôts **GitHub** : l'URL Gitea est ignorée sans message
-d'erreur. Pour passer par HACS, il faut un miroir GitHub du dépôt (Gitea > Paramètres du
-dépôt > Miroir > *Pousser vers un miroir*, vers un dépôt GitHub public), puis ajouter
-l'URL **GitHub** dans HACS > ⋮ > **Dépôts personnalisés**, catégorie **Intégration**.
 
 ## Configuration
 
